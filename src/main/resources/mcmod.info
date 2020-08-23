@@ -1,6 +1,6 @@
 [
 {
-  "modid": "cirback",
+  "modid": "cihback",
   "name": "Conflict In Harmony Backport",
   "description": "Allow multiple keybindings to be set to the same key",
   "version": "${version}",

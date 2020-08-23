@@ -1,4 +1,4 @@
-package sschr15.cirback;
+package sschr15.cihback;
 
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
@@ -6,7 +6,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.KeyBinding;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import sschr15.cirback.interfaces.IKeyBinding;
+import sschr15.cihback.interfaces.IKeyBinding;
 
 @Mod(
         modid = Ref.MOD_ID,

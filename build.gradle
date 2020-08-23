@@ -23,8 +23,8 @@ plugins {
 apply plugin: 'forge'
 
 version = "1.0"
-group= "sschr15.cirback" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
-archivesBaseName = "cirback"
+group= "sschr15.cihback" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+archivesBaseName = "cihback"
 
 sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
 
@@ -46,7 +46,7 @@ task buildMod {
 
 sourceSets {
     main {
-        ext.refMap = 'cirback.mixins.refmap.json'
+        ext.refMap = 'cihback.mixins.refmap.json'
     }
 }
 
@@ -110,7 +110,7 @@ jar {
             'FMLCorePluginContainsFMLMod': true,
             'ForceLoadAsMod': true,
             'TweakClass': 'org.spongepowered.asm.launch.MixinTweaker',
-            'MixinConfigs': 'cirback.mixins.json',
+            'MixinConfigs': 'cihback.mixins.json',
             'FMLCorePlugin': 'sschr15.mixin.MixinCoremod'
     )
     from(configurations.embed.collect {

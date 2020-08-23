@@ -1,4 +1,4 @@
-package sschr15.cirback.mixin;
+package sschr15.cihback.mixin;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
@@ -10,7 +10,7 @@ import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import sschr15.cirback.interfaces.IKeyBinding;
+import sschr15.cihback.interfaces.IKeyBinding;
 
 import java.util.Collection;
 import java.util.List;
