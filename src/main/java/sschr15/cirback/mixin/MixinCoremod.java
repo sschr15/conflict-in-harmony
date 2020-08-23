@@ -6,6 +6,10 @@ import org.spongepowered.asm.mixin.Mixins;
 
 import java.util.Map;
 
+/**
+ * Mixin requires an initialization thing, so this Coremod
+ * launches Mixin and notifies it of where my mixins are.
+ */
 public class MixinCoremod implements IFMLLoadingPlugin {
     public MixinCoremod() {
         MixinBootstrap.init();
