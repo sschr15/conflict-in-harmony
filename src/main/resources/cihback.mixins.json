@@ -1,6 +1,6 @@
 {
-    "package": "sschr15.cirback.mixin",
-    "refmap": "cirback.mixins.refmap.json",
+    "package": "sschr15.cihback.mixin",
+    "refmap": "cihback.mixins.refmap.json",
     "target": "@env(DEFAULT)",
     "minVersion": "0.6",
     "compatibilityLevel": "JAVA_8",

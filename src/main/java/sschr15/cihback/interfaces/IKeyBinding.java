@@ -1,4 +1,4 @@
-package sschr15.cirback.interfaces;
+package sschr15.cihback.interfaces;
 
 /**
  * Basic "duck interface" to change values

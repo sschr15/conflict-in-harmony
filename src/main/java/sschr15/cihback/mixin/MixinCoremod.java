@@ -1,4 +1,4 @@
-package sschr15.cirback.mixin;
+package sschr15.cihback.mixin;
 
 import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin;
 import org.spongepowered.asm.launch.MixinBootstrap;
@@ -13,7 +13,7 @@ import java.util.Map;
 public class MixinCoremod implements IFMLLoadingPlugin {
     public MixinCoremod() {
         MixinBootstrap.init();
-        Mixins.addConfiguration("cirback.mixins.json");
+        Mixins.addConfiguration("cihback.mixins.json");
     }
 
     public String[] getASMTransformerClass() {
