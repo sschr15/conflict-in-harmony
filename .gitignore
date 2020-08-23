@@ -1,0 +1,8 @@
+run/
+out/
+build/
+.idea/
+.gradle/
+local.properties
+libs/
+mapping.zip

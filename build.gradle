@@ -1,0 +1,121 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        maven {
+            name = "forge"
+            url = "http://files.minecraftforge.net/maven"
+        }
+        maven {
+            name = "sonatype"
+            url = "https://oss.sonatype.org/content/repositories/snapshots/"
+        }
+        maven { url 'http://repo.spongepowered.org/maven' }
+    }
+    dependencies {
+        classpath 'net.minecraftforge.gradle:ForgeGradle:1.2-SNAPSHOT'
+    }
+}
+plugins {
+    id 'ru.vyarus.use-python' version '1.2.0'
+    id 'java'
+}
+
+apply plugin: 'forge'
+
+version = "1.0"
+group= "sschr15.cirback" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
+archivesBaseName = "cirback"
+
+sourceCompatibility = targetCompatibility = JavaVersion.VERSION_1_8
+
+task genCustomMappings(type: PythonTask) {
+    command "gen-mappings.py stable_12 1.7.10"
+}
+
+task setupWorkspace {
+    group 'forgegradle'
+    description 'Set up the workspace, generating custom mappings first due to Mixin problems'
+    dependsOn(genCustomMappings, setupDecompWorkspace)
+}
+
+task buildMod {
+    group 'build'
+    description 'Build the mod, generating custom mappings first due to Mixin problems'
+    dependsOn(genCustomMappings, build)
+}
+
+sourceSets {
+    main {
+        ext.refMap = 'cirback.mixins.refmap.json'
+    }
+}
+
+repositories {
+    maven { url 'http://repo.spongepowered.org/maven' }
+    mavenLocal()
+}
+
+minecraft {
+    version = "1.7.10-10.13.4.1614-1.7.10"
+    runDir = "run"
+    mappings = "stable_custom"
+}
+
+configurations {
+    embed
+    implementation.extendsFrom(embed)
+}
+
+dependencies {
+    // you may put jars on which you depend on in ./libs
+    // or you may define them like so..
+    //compile "some.group:artifact:version:classifier"
+    //compile "some.group:artifact:version"
+
+    // real examples
+    //compile 'com.mod-buildcraft:buildcraft:6.0.8:dev'  // adds buildcraft to the dev env
+    //compile 'com.googlecode.efficient-java-matrix-library:ejml:0.24' // adds ejml to the dev env
+
+    // for more info...
+    // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
+    // http://www.gradle.org/docs/current/userguide/dependency_management.html
+
+    embed('org.spongepowered:mixin:0.7.11-SNAPSHOT') {
+        transitive(false)
+    }
+}
+
+processResources
+{
+    // this will ensure that this task is redone when the versions change.
+    inputs.property "version", project.version
+    inputs.property "mcversion", project.minecraft.version
+
+    // replace stuff in mcmod.info, nothing else
+    from(sourceSets.main.resources.srcDirs) {
+        include 'mcmod.info'
+                
+        // replace version and mcversion
+        expand 'version':project.version, 'mcversion':project.minecraft.version
+    }
+        
+    // copy everything else, thats not the mcmod.info
+    from(sourceSets.main.resources.srcDirs) {
+        exclude 'mcmod.info'
+    }
+}
+
+jar {
+    manifest.attributes(
+            'FMLCorePluginContainsFMLMod': true,
+            'ForceLoadAsMod': true,
+            'TweakClass': 'org.spongepowered.asm.launch.MixinTweaker',
+            'MixinConfigs': 'cirback.mixins.json',
+            'FMLCorePlugin': 'sschr15.mixin.MixinCoremod'
+    )
+    from(configurations.embed.collect {
+        it.isDirectory() ? it : zipTree(it)
+    }) {
+        exclude('LICENSE.txt', 'META-INF/MANIFEST.MF', 'META-INF/maven/**', 'META-INF/*.RSA', 'META-INF/*.SF')
+    }
+}

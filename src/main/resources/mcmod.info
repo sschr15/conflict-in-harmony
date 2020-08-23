@@ -1,0 +1,16 @@
+[
+{
+  "modid": "cirback",
+  "name": "Conflict In Harmony Backport",
+  "description": "Allow multiple keybindings to be set to the same key",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "https://github.com/sschr15/ConflictInHarmony",
+  "updateUrl": "",
+  "authorList": ["sschr15"],
+  "credits": "",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]
