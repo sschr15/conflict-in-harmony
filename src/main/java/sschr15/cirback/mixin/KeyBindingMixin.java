@@ -3,7 +3,9 @@ package sschr15.cirback.mixin;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import net.minecraft.client.settings.KeyBinding;
-import net.minecraft.util.IntHashMap;
+import net.minecraftforge.client.settings.IKeyConflictContext;
+import net.minecraftforge.client.settings.KeyBindingMap;
+import net.minecraftforge.client.settings.KeyModifier;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -12,80 +14,84 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import sschr15.cirback.interfaces.IKeyBinding;
 
-import java.util.Collection;
-import java.util.List;
+import java.util.Map;
 
 /**
  * Mixin to change the keybinding storage method, allowing multiple
  * actions to be assigned to the same key
  * @author sschr15
  */
-@Mixin(value = KeyBinding.class, remap = false)
+@Mixin(value = KeyBinding.class)
 public abstract class KeyBindingMixin implements IKeyBinding {
-    // These values are obfuscated here because I can't figure out how to tell Mixin what mappings are being used
-    @Shadow private int field_151474_i;                     // pressTime
-    @Shadow private boolean field_74513_e;                  // pressed
-    @Shadow private static @Final List field_74516_a;       // keybindArray
-    @Shadow private static @Final IntHashMap field_74514_b; // hash
+    @Shadow @Final private static Map<String, KeyBinding> KEYBIND_ARRAY;
+    @Shadow @Final private static KeyBindingMap HASH;
+    @Shadow private int keyCode;
+    @Shadow(remap = false) private KeyModifier keyModifier;
+    @Shadow private int pressTime;
+    @Shadow private boolean pressed;
     /**
      * Multimap supporting multiple keybindings. Casting to `IKeyBinding` to be able to
      * apply `this` to the thing
      */
     private static final Multimap<Integer, IKeyBinding> keybindingMap = HashMultimap.create();
 
-    // My method names are the deobf versions of the actual methods
-
-    // Soft @Overwrite: return after my code is run
-    @Inject(method = "func_74507_a", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "onTick", at = @At("HEAD"), cancellable = true)
     private static void onTick(int keyCode, CallbackInfo ci) {
-        // Telling it to return, so if I return early this still fires
         ci.cancel();
         if (keyCode != 0) {
-            Collection<IKeyBinding> keyBindings = keybindingMap.get(keyCode);
-            if (keyBindings == null) return;
-            for (IKeyBinding keyBinding : keyBindings) {
-                keyBinding.increasePressTime();
-            }
+            keybindingMap.get(keyCode).forEach(key -> key.increasePressTime());
         }
     }
 
-    // Same thing as above
-    @Inject(method = "func_74510_a", at = @At("HEAD"), cancellable = true)
-    private static void setKeyBindState(int keyCode, boolean pressed, CallbackInfo ci) {
+    @Inject(method = "setKeyBindState", at = @At("HEAD"), cancellable = true)
+    private static void onSetState(int keyCode, boolean pressed, CallbackInfo ci) {
         ci.cancel();
         if (keyCode != 0) {
-            Collection<IKeyBinding> keyBindings = keybindingMap.get(keyCode);
-            if (keyBindings == null) return;
-            for (IKeyBinding keyBinding : keyBindings) {
-                keyBinding.press(pressed);
-            }
+            keybindingMap.get(keyCode).forEach(key -> key.press(pressed));
         }
     }
 
-    // Get all the keybinds and re-add them to the (now cleared) map
-    @Inject(method = "func_74508_b", at = @At("HEAD"), cancellable = true)
-    private static void resetKeyBindingArrayAndHash(CallbackInfo ci) {
+    @Inject(method = "resetKeyBindingArrayAndHash", at = @At("HEAD"), cancellable = true)
+    private static void onReset(CallbackInfo ci) {
+        ci.cancel();
         keybindingMap.clear();
-        for (Object o : field_74516_a) {
-            KeyBinding keyBinding = (KeyBinding) o;
+        KEYBIND_ARRAY.forEach((s, keyBinding) -> {
             keybindingMap.put(keyBinding.getKeyCode(), (IKeyBinding) keyBinding);
-        }
-        ci.cancel();
+        });
     }
 
-    // constructor: add the key to my map and clear the existing map
-    @Inject(method = "<init>", at = @At("RETURN"), cancellable = true)
-    private void onInit(String desc, int keyCode, String category, CallbackInfo ci) {
+    @Inject(method = "<init>(Ljava/lang/String;ILjava/lang/String;)V", at = @At("RETURN"))
+    private void constructor(String description, int keyCode, String category, CallbackInfo ci) {
+        HASH.clearMap();
         keybindingMap.put(keyCode, this);
-        field_74514_b.clearMap();
     }
 
-    // two methods to make IDEs happy
+    // Forge-specific code is below
+
+    @Inject(method = "<init>(Ljava/lang/String;Lnet/minecraftforge/client/settings/IKeyConflictContext;Lnet/minecraftforge/client/settings/KeyModifier;ILjava/lang/String;)V", at = @At("RETURN"), remap = false)
+    private void constructor(String description, IKeyConflictContext ctx, KeyModifier modifier, int keyCode, String category, CallbackInfo ci) {
+        this.constructor(description, keyCode, category, ci);
+    }
+
+    @Inject(method = "setKeyModifierAndCode", at = @At("HEAD"), cancellable = true, remap = false)
+    private void onSetModifier(KeyModifier modifier, int keyCode, CallbackInfo ci) {
+        ci.cancel();
+        if (modifier.matches(keyCode)) modifier = KeyModifier.NONE;
+        keybindingMap.remove(this.keyCode, this);
+        this.keyCode = keyCode;
+        this.keyModifier = modifier;
+        keybindingMap.put(this.keyCode, this);
+    }
+
+    // Interface methods to access private fields
+
+    @Override
     public void increasePressTime() {
-        this.field_151474_i += field_151474_i;
+        this.pressTime++;
     }
 
+    @Override
     public void press(boolean state) {
-        this.field_74513_e = state;
+        this.pressed = state;
     }
 }
